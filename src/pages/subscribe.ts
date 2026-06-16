@@ -1,15 +1,8 @@
-export interface Env {
-  N8N_WEBHOOK_URL: string;
-  RESEND_API_KEY: string;
-}
+import type { APIRoute } from 'astro';
 
-export const onRequest: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
+export const prerender = false;
 
-  if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
-  }
-
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const formData = await request.formData();
     const email = formData.get('email')?.toString().trim().toLowerCase();
@@ -21,34 +14,44 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       );
     }
 
+    // Access Cloudflare env vars
+    const runtime = (locals as any).runtime;
+    const env = runtime?.env ?? process.env;
+
     // 1. Send welcome email via Resend
-    try {
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Zirflow Blog <blog@zirflow.com>',
-          to: [email],
-          subject: '欢迎订阅 Zirflow Blog！',
-          text: '感谢你的订阅！\n\n我是 Zirflow 团队。你以后会在第一时间收到我们的最新文章——珠三角企业 AI 自动化落地的真实案例和实战经验。\n\n这是我们的第一封信，后续内容会陆续发送。如果你想进一步了解 Zirflow 如何帮你跑通业务，随时回复这封邮件。\n\nZirflow 臻孚科技\nhttps://zirflow.com',
-        }),
-      });
-    } catch (emailErr) {
-      console.error('Welcome email error (non-fatal):', emailErr);
+    const resendKey = env.RESEND_API_KEY;
+    if (resendKey) {
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'Zirflow Blog <blog@zirflow.com>',
+            to: [email],
+            subject: '欢迎订阅 Zirflow Blog！',
+            text: '感谢你的订阅！\n\n我是 Zirflow 团队。你以后会在第一时间收到我们的最新文章——珠三角企业 AI 自动化落地的真实案例和实战经验。\n\n这是我们的第一封信，后续内容会陆续发送。如果你想进一步了解 Zirflow 如何帮你跑通业务，随时回复这封邮件。\n\nZirflow 臻孚科技\nhttps://zirflow.com',
+          }),
+        });
+      } catch (err) {
+        console.error('Welcome email error (non-fatal):', err);
+      }
     }
 
-    // 2. Call n8n webhook (stores subscriber in Baserow)
-    try {
-      await fetch(env.N8N_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'blog.zirflow.com' }),
-      });
-    } catch (n8nErr) {
-      console.error('n8n webhook error (non-fatal):', n8nErr);
+    // 2. Call n8n webhook
+    const n8nUrl = env.N8N_WEBHOOK_URL;
+    if (n8nUrl) {
+      try {
+        await fetch(n8nUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, source: 'blog.zirflow.com' }),
+        });
+      } catch (err) {
+        console.error('n8n error (non-fatal):', err);
+      }
     }
 
     // Return success page
