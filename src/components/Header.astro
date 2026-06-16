@@ -1,0 +1,58 @@
+---
+export interface Props {
+  hideHome?: boolean;
+}
+const { hideHome } = Astro.props;
+---
+
+<header class="header">
+  <div class="wrap wrap-wide">
+    <a href="/" class="logo">
+      <span class="logo-icon">Z</span>
+      <span class="logo-text">Zirflow <span class="logo-dim">Blog</span></span>
+    </a>
+    <nav class="nav">
+      {!hideHome && <a href="/">博客</a>}
+      <a href="https://zirflow.com" target="_blank" rel="noopener noreferrer">主站 →</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+.header {
+  border-bottom: 1px solid var(--line);
+  padding: 16px 0;
+  background: rgba(7,9,15,0.92);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--fg);
+}
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  display: grid;
+  place-items: center;
+  font: 800 14px/1 var(--font-display);
+  color: var(--bg);
+}
+.logo-text { font: 700 16px/1 var(--font-display); letter-spacing: -0.02em; }
+.logo-dim { color: var(--muted); font-weight: 500; }
+.nav { display: flex; gap: 20px; }
+.nav a { font: 600 13px/1 var(--font-body); color: var(--fg-2); text-decoration: none; padding: 4px 0; }
+.nav a:hover { color: var(--fg); }
+</style>

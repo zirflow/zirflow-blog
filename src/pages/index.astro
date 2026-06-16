@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import SubscribeForm from '../components/SubscribeForm.astro';
+import { getCollection } from 'astro:content';
+import { sortPostsByDate } from '../utils';
+
+const posts = await getCollection('posts');
+const sortedPosts = sortPostsByDate(posts);
+---
+
+<BaseLayout
+  title="Zirflow Blog · 企业 AI 自动化实战"
+  description="珠三角企业 AI 自动化落地经验：案例、策略、ROI 分析。从 Excel 到 AI 中台，让业务自己跑。"
+>
+  <section class="hero-section wrap wrap-wide">
+    <div class="hero-section-inner">
+      <span class="pill"><span class="pulse-dot"></span> 实战 · 案例 · 干货</span>
+      <h1 class="hero-title">企业 AI 自动化实战</h1>
+      <p class="hero-desc">
+        珠三角企业 AI 自动化落地经验。不讲概念，只讲怎么干。<br/>
+        从 Excel 到 AI 中台，让业务自己跑。
+      </p>
+      <SubscribeForm />
+    </div>
+  </section>
+
+  <section class="wrap wrap-wide">
+    {sortedPosts.length === 0 ? (
+      <p class="muted" style="text-align:center;padding:60px 0">文章准备中，敬请期待…</p>
+    ) : (
+      sortedPosts.map(post => <PostCard post={post} />)
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+.hero-section {
+  padding: 60px 0 40px;
+}
+.hero-section-inner { max-width: 640px; }
+.hero-title {
+  font: 900 clamp(36px, 4.4vw, 56px)/1 var(--font-display);
+  letter-spacing: -0.045em;
+  color: var(--fg);
+  margin: 16px 0 12px;
+}
+.hero-desc {
+  font-size: 16px;
+  color: var(--fg-2);
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: rgba(255,255,255,0.02);
+  font: 600 11px/1 var(--font-mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+.pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 8px var(--accent-2);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.55); opacity: 0.6; }
+}
+</style>

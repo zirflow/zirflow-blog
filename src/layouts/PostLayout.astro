@@ -1,0 +1,96 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import SubscribeForm from '../components/SubscribeForm.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const { title, description, date, tags, minutesRead, coverImage } = post.data;
+const dateStr = new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: title,
+  description: description,
+  datePublished: date.toISOString(),
+  author: {
+    "@type": "Organization",
+    name: "Zirflow 臻孚科技",
+    url: "https://zirflow.com"
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Zirflow 臻孚科技",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://blog.zirflow.com/favicon.svg"
+    }
+  },
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": `https://blog.zirflow.com/posts/${post.slug}/`
+  }
+};
+---
+
+<BaseLayout title={title} description={description} ogImage={coverImage}>
+  <article class="post-article wrap wrap-wide">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <header class="post-header">
+      {tags && tags.length > 0 && (
+        <div class="post-tags">
+          {tags.map(tag => <a href={`/tags/${tag}/`} class="tag">{tag}</a>)}
+        </div>
+      )}
+      <h1 class="post-title">{title}</h1>
+      <div class="post-meta">
+        <time datetime={date}>{dateStr}</time>
+        {minutesRead && <span>{minutesRead} min read</span>}
+      </div>
+    </header>
+
+    <div class="post-content">
+      <slot />
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-footer-box">
+        <h3>觉得有用？</h3>
+        <p>留下邮箱，有新案例和自动化实战内容第一时间通知你。</p>
+        <SubscribeForm />
+      </div>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+.post-article { padding: 40px 0; }
+.post-header { margin-bottom: 40px; }
+.post-tags { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.post-title { margin: 0 0 12px; }
+.post-meta {
+  display: flex;
+  gap: 16px;
+  font: 13px/1 var(--font-mono);
+  color: var(--muted);
+}
+.post-meta span:not(:first-child)::before { content: '·'; margin-right: 16px; }
+.post-content {
+  font-size: 16px;
+  line-height: 1.75;
+}
+.post-footer { margin-top: 60px; }
+.post-footer-box {
+  border: 1px solid var(--line-2);
+  border-radius: 16px;
+  padding: 32px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  text-align: center;
+}
+.post-footer-box h3 { margin: 0 0 8px; font-size: 20px; }
+.post-footer-box p { margin: 0 0 4px; font-size: 14px; }
+.post-footer-box .sub-form-inner { margin: 16px auto 0; }
+</style>

@@ -1,0 +1,68 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+export interface Props {
+  post: CollectionEntry<'posts'>;
+}
+const { post } = Astro.props;
+const { slug } = post;
+const { title, date, description, tags, minutesRead } = post.data;
+const dateStr = new Date(date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<article class="post-card">
+  <a href={`/posts/${slug}/`} class="post-card-link">
+    <div class="post-card-meta">
+      <time datetime={date}>{dateStr}</time>
+      {minutesRead && <span class="post-card-read">{minutesRead} min read</span>}
+    </div>
+    <h2 class="post-card-title">{title}</h2>
+    <p class="post-card-desc">{description}</p>
+    {tags && tags.length > 0 && (
+      <div class="post-card-tags">
+        {tags.map(tag => <a href={`/tags/${tag}/`} class="tag">{tag}</a>)}
+      </div>
+    )}
+    <span class="post-card-cta">继续阅读 →</span>
+  </a>
+</article>
+
+<style>
+.post-card {
+  border-bottom: 1px solid var(--line);
+  padding: 32px 0;
+  transition: opacity 0.2s;
+}
+.post-card:first-of-type { padding-top: 0; }
+.post-card-link { text-decoration: none; display: block; }
+.post-card-link:hover { opacity: 0.85; }
+.post-card-meta {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font: 12px/1 var(--font-mono);
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.post-card-read::before { content: '·'; margin-right: 14px; }
+.post-card-title {
+  font: 800 22px/1.2 var(--font-display);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin: 0 0 8px;
+}
+.post-card-desc {
+  font-size: 15px;
+  color: var(--fg-2);
+  line-height: 1.6;
+  margin: 0;
+}
+.post-card-tags { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.post-card-tags a.tag { text-decoration: none; }
+.post-card-cta {
+  display: inline-block;
+  margin-top: 12px;
+  font: 600 13px/1 var(--font-body);
+  color: var(--accent);
+}
+</style>

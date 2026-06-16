@@ -1,0 +1,95 @@
+---
+const formAction = '/subscribe';
+const buttonText = Astro.props.buttonText || '免费订阅';
+---
+
+<form class="sub-form" action={formAction} method="POST">
+  <div class="sub-form-inner">
+    <label for="subscribe-email" class="sr-only">邮箱地址</label>
+    <input
+      type="email"
+      name="email"
+      id="subscribe-email"
+      placeholder="输入邮箱地址…"
+      required
+      class="sub-input"
+      aria-describedby="subscribe-hint"
+    />
+    <button type="submit" class="sub-btn">{buttonText}</button>
+  </div>
+  <p class="sub-hint" id="subscribe-hint">不营销 · 每周最多 1 封 · 随时退订</p>
+</form>
+
+<style>
+.sub-form { margin: 24px 0; }
+.sub-form-inner {
+  display: flex;
+  gap: 8px;
+  max-width: 480px;
+}
+.sub-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  font: 14px/1.4 var(--font-body);
+  outline: none;
+}
+.sub-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(77,141,255,0.2); }
+.sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+.sub-input::placeholder { color: var(--muted); }
+.sub-btn {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent) 0%, #2a6cf0 100%);
+  color: #fff;
+  font: 600 14px/1 var(--font-body);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.sub-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px -4px rgba(77,141,255,0.5); }
+.sub-hint { font: 11px/1 var(--font-mono); color: var(--muted); margin-top: 8px; }
+@media (max-width: 480px) {
+  .sub-form-inner { flex-direction: column; }
+  .sub-input[data-astro-cid-ogjhcnvc], .sub-btn[data-astro-cid-ogjhcnvc] { width: 100%; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('.sub-form');
+  if (!form) return;
+  const btn = form.querySelector('.sub-btn');
+  const input = form.querySelector('.sub-input');
+  const hint = form.querySelector('.sub-hint');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = '提交中…';
+
+    try {
+      const res = await fetch('/subscribe', {
+        method: 'POST',
+        body: new FormData(form),
+      });
+      if (res.ok) {
+        form.innerHTML = '<p style="color:var(--accent-2);font-weight:600;font-size:15px">✓ 订阅成功！感谢你的关注。</p>';
+      } else {
+        throw new Error('订阅失败');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = '免费订阅';
+      const errMsg = document.createElement('p');
+      errMsg.style.cssText = 'color:var(--warn);font-size:13px;margin-top:8px';
+      errMsg.textContent = '出错了，请稍后重试或邮件联系 hi@zirflow.com';
+      form.appendChild(errMsg);
+    }
+  });
+});
+</script>
