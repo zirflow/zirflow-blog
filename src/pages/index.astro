@@ -7,71 +7,211 @@ import { sortPostsByDate } from '../utils';
 
 const posts = await getCollection('posts');
 const sortedPosts = sortPostsByDate(posts);
+const featured = sortedPosts[0];
+const rest = sortedPosts.slice(1);
 ---
 
 <BaseLayout
   title="Zirflow Blog · 企业 AI 自动化实战"
   description="珠三角企业 AI 自动化落地经验：案例、策略、ROI 分析。从 Excel 到 AI 中台，让业务自己跑。"
 >
-  <section class="hero-section wrap wrap-wide">
-    <div class="hero-section-inner">
-      <span class="pill"><span class="pulse-dot"></span> 实战 · 案例 · 干货</span>
-      <h1 class="hero-title">企业 AI 自动化实战</h1>
-      <p class="hero-desc">
-        珠三角企业 AI 自动化落地经验。不讲概念，只讲怎么干。<br/>
-        从 Excel 到 AI 中台，让业务自己跑。
-      </p>
-      <SubscribeForm />
+  <!-- HERO -->
+  <section class="blog-hero">
+    <div class="wrap wrap-wide">
+      <div class="blog-hero-content">
+        <span class="blog-hero-chip">珠三角企业 AI 实战</span>
+        <h1 class="blog-hero-title">让业务自己跑</h1>
+        <p class="blog-hero-desc">
+          不讲概念，只讲怎么干。用真实案例告诉你<br class="hide-mob"/>
+          珠三角企业怎么把 AI 自动化落地赚钱。
+        </p>
+        <div class="blog-hero-stats">
+          <div class="stat-item"><span class="stat-val">14 天</span><span class="stat-lbl">交付周期</span></div>
+          <div class="stat-item"><span class="stat-val">3 min</span><span class="stat-lbl">询盘回复</span></div>
+          <div class="stat-item"><span class="stat-val">7×24</span><span class="stat-lbl">不停机</span></div>
+        </div>
+        <SubscribeForm />
+      </div>
     </div>
   </section>
 
-  <section class="wrap wrap-wide">
-    {sortedPosts.length === 0 ? (
-      <p class="muted" style="text-align:center;padding:60px 0">文章准备中，敬请期待…</p>
-    ) : (
-      sortedPosts.map(post => <PostCard post={post} />)
+  <!-- FEATURED POST -->
+  {featured && (
+    <section class="wrap wrap-wide featured-section">
+      <div class="featured-card">
+        <div class="featured-tag">最新文章</div>
+        <div class="featured-meta">
+          <time datetime={featured.data.date}>
+            {new Date(featured.data.date).toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric' })}
+          </time>
+          {featured.data.minutesRead && <span>{featured.data.minutesRead} min read</span>}
+        </div>
+        <h2 class="featured-title">{featured.data.title}</h2>
+        <p class="featured-desc">{featured.data.description}</p>
+        <div class="featured-tags">
+          {featured.data.tags?.map(tag => <a href={`/tags/${tag}/`} class="tag">{tag}</a>)}
+        </div>
+        <a href={`/posts/${featured.slug}/`} class="featured-cta">阅读全文 →</a>
+      </div>
+    </section>
+  )}
+
+  <!-- ALL POSTS -->
+  <section class="wrap wrap-wide posts-section">
+    {rest.length > 0 && (
+      <div class="section-header">
+        <h2 class="section-title">全部文章</h2>
+        <span class="section-count">{sortedPosts.length} 篇</span>
+      </div>
     )}
+    {rest.map(post => <PostCard post={post} />)}
+    {sortedPosts.length === 0 && (
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>文章准备中</h3>
+        <p>订阅后第一时间收到新文章通知</p>
+      </div>
+    )}
+  </section>
+
+  <!-- CTA -->
+  <section class="blog-cta-section">
+    <div class="wrap wrap-wide">
+      <div class="blog-cta-box">
+        <h2>想要你的企业也跑起来？</h2>
+        <p>14 天交付你的 AI 自动化方案。先诊断，后报价，不满意不收费。</p>
+        <div class="blog-cta-actions">
+          <a href="https://zirflow.com" class="btn-primary">了解 Zirflow →</a>
+          <a href="mailto:hi@zirflow.com" class="btn-ghost-blog">hi@zirflow.com</a>
+        </div>
+      </div>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
-.hero-section {
-  padding: 60px 0 40px;
+/* ===== HERO ===== */
+.blog-hero {
+  padding: 64px 0 48px;
+  position: relative;
 }
-.hero-section-inner { max-width: 640px; }
-.hero-title {
-  font: 900 clamp(36px, 4.4vw, 56px)/1 var(--font-display);
-  letter-spacing: -0.045em;
-  color: var(--fg);
-  margin: 16px 0 12px;
+.blog-hero::after {
+  content: ''; position: absolute; bottom: 0; left: var(--pad); right: var(--pad);
+  height: 1px; background: linear-gradient(90deg, transparent, var(--line-2), transparent);
 }
-.hero-desc {
-  font-size: 16px;
-  color: var(--fg-2);
-  line-height: 1.6;
-  margin: 0 0 24px;
+.blog-hero-content { max-width: 680px; }
+.blog-hero-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: rgba(255,255,255,0.02);
+  font: 600 11px/1 var(--font-mono); letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--fg-2); margin-bottom: 16px;
 }
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line-2);
-  background: rgba(255,255,255,0.02);
-  font: 600 11px/1 var(--font-mono);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--fg-2);
+.blog-hero-title {
+  font: 900 clamp(40px, 5vw, 64px)/0.95 var(--font-display);
+  letter-spacing: -0.05em;
+  background: linear-gradient(135deg, var(--fg) 0%, var(--fg-2) 40%, var(--accent) 80%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 16px;
 }
-.pulse-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--accent-2);
-  box-shadow: 0 0 8px var(--accent-2);
-  animation: pulse 1.6s ease-in-out infinite;
+.blog-hero-desc {
+  font-size: 17px; line-height: 1.6; color: var(--fg-2);
+  margin: 0 0 28px; max-width: 540px;
 }
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.55); opacity: 0.6; }
+.blog-hero-stats {
+  display: flex; gap: 28px; margin-bottom: 28px;
+}
+.stat-item { display: flex; flex-direction: column; gap: 2px; }
+.stat-val { font: 800 22px/1 var(--font-mono); color: var(--accent-2); }
+.stat-lbl { font: 11px/1 var(--font-mono); color: var(--muted); }
+
+/* ===== FEATURED ===== */
+.featured-section { padding: 40px 0; }
+.featured-card {
+  background: linear-gradient(160deg, var(--surface), rgba(17,24,39,0.4));
+  border: 1px solid var(--line); border-radius: 16px;
+  padding: 32px; position: relative; overflow: hidden;
+}
+.featured-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.featured-tag {
+  display: inline-block; padding: 3px 10px; border-radius: 999px;
+  font: 600 10px/1 var(--font-mono); letter-spacing: 0.14em;
+  text-transform: uppercase; background: var(--accent); color: #fff;
+  margin-bottom: 12px;
+}
+.featured-meta {
+  display: flex; gap: 12px; align-items: center;
+  font: 12px/1 var(--font-mono); color: var(--muted); margin-bottom: 8px;
+}
+.featured-title {
+  font: 800 26px/1.2 var(--font-display); letter-spacing: -0.025em;
+  color: var(--fg); margin: 0 0 10px;
+}
+.featured-desc { font-size: 15px; color: var(--fg-2); line-height: 1.6; margin: 0 0 14px; }
+.featured-tags { display: flex; gap: 6px; margin-bottom: 16px; }
+.featured-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 600 14px/1 var(--font-body); color: var(--accent);
+  text-decoration: none;
+}
+.featured-cta:hover { text-decoration: underline; }
+
+/* ===== POSTS ===== */
+.posts-section { padding: 32px 0 48px; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.section-title {
+  font: 700 18px/1 var(--font-display); color: var(--fg); letter-spacing: -0.01em;
+}
+.section-count { font: 12px/1 var(--font-mono); color: var(--muted); }
+.empty-state { text-align: center; padding: 60px 0; }
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state h3 { font: 700 18px/1 var(--font-display); color: var(--fg); margin-bottom: 6px; }
+.empty-state p { font-size: 14px; color: var(--muted); }
+
+/* ===== CTA ===== */
+.blog-cta-section {
+  padding: 0 0 60px;
+}
+.blog-cta-box {
+  text-align: center;
+  border: 1px solid var(--line-2); border-radius: 20px;
+  padding: 48px 32px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+.blog-cta-box h2 {
+  font: 800 26px/1.2 var(--font-display); letter-spacing: -0.025em;
+  color: var(--fg); margin: 0 0 8px;
+}
+.blog-cta-box p { font-size: 15px; color: var(--muted); margin: 0 0 24px; }
+.blog-cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #2563eb);
+  color: #fff; font: 600 14px/1 var(--font-body);
+  text-decoration: none;
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.4), 0 8px 20px -8px rgba(59,130,246,0.5);
+}
+.btn-ghost-blog {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px; border-radius: 10px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line-2);
+  color: var(--fg-2); font: 600 14px/1 var(--font-body);
+  text-decoration: none;
+}
+.btn-ghost-blog:hover { color: var(--fg); background: rgba(255,255,255,0.06); }
+
+@media (max-width: 640px) {
+  .hide-mob { display: none; }
+  .blog-hero-title { font-size: 32px; }
+  .stat-val { font-size: 18px; }
+  .blog-hero-stats { gap: 20px; }
 }
 </style>
